@@ -1,0 +1,7 @@
+Flask==2.2.2
+numpy==1.24.2
+Pillow==9.4.0
+requests==2.28.1
+torch==1.13.1+cu117
+torchvision==0.14.1+cu117
+scikit-learn==1.2.0
