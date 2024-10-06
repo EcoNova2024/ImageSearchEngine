@@ -62,8 +62,8 @@ search_engine = ImageSearchEngine("all_vecs.npy", "all_names.npy")
 
 @app.route('/search', methods=['POST'])
 def search():
-    if 'image' not in request.files and 'url' not in request.json:
-        return jsonify({"error": "No image file or URL provided"}), 400
+    if 'filename' not in request.json and 'url' not in request.json:
+        return jsonify({"error": "No image filename or URL provided"}), 400
 
     if 'url' in request.json:
         image_url = request.json['url']
@@ -73,18 +73,23 @@ def search():
         except Exception as e:
             return jsonify({"error": f"Failed to retrieve image from URL: {str(e)}"}), 500
     else:
-        image_file = request.files['image']
-        if image_file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
+        filename = request.json['filename']
+        # Construct the full path to the image
+        image_path = os.path.join('images', filename)
 
+        # Check if the file exists
+        if not os.path.exists(image_path):
+            return jsonify({"error": "Image not found."}), 404
+        
         try:
-            image = Image.open(image_file)  
+            image = Image.open(image_path)  
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
     # Now you can proceed with searching
     similar_images = search_engine.search_image(image)
     return jsonify([{"name": name, "similarity": float(similarity)} for name, similarity in similar_images])
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
